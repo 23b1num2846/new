@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id        String     @id @default(cuid())
+  name      String
+  businesses Business[]
+}
+
+model Business {
+  id           String   @id @default(cuid())
+  name         String
+  description  String
+  address      String
+  phone        String
+  email        String
+  website      String
+  location     String
+  facebookUrl  String
+  instagramUrl String
+  timetable    String
+  categoryId   String
+  logoUrl      String?
+  category     Category  @relation(fields: [categoryId], references: [id])
+  reviews Review[]
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  rating      Int
+  text        String?
+  useful      Int      @default(0)
+  funny       Int      @default(0)
+  cool        Int      @default(0)
+  userId      String
+  businessId  String
+  createdAt   DateTime @default(now())
+  user        User      @relation(fields: [userId], references: [id])
+  business    Business  @relation(fields: [businessId], references: [id])
+  photos      ReviewPhoto[]
+  ratings     ReviewRating[]
+}
+
+
+model ReviewCategory {
+  id    String   @id @default(cuid())
+  name  String  
+  icon  String?  
+  order Int      @default(0)
+  ratings ReviewRating[]
+}
+
+model ReviewRating {
+  id          String   @id @default(cuid())
+  reviewId    String
+  categoryId  String
+  score       Int      
+  review      Review         @relation(fields: [reviewId], references: [id])
+  category    ReviewCategory @relation(fields: [categoryId], references: [id])
+}
+
+model ReviewPhoto {
+  id        String @id @default(cuid())
+  url       String
+  reviewId  String
+  review    Review @relation(fields: [reviewId], references: [id])
+}
+
+model User {
+  id String @id @default(cuid())
+  name String
+  password String
+  reviews Review[]
+}
