@@ -1,27 +1,19 @@
-import * as path from 'path';
-import { FastifyInstance } from 'fastify';
-import AutoLoad from '@fastify/autoload';
+import { FastifyInstance } from "fastify";
+import sensible from "./plugins/sensible";
+import rootRoutes from "./routes/root";
+import categoryRoutes from "./routes/category";
+import businessRoutes from "./routes/business";
+import reviewRoutes from "./routes/review";
+import userRoutes from "./routes/user";
 
-/* eslint-disable-next-line */
-export interface AppOptions {}
+export default async function buildApp(app: FastifyInstance) {
+  await app.register(sensible);
 
-export async function app(fastify: FastifyInstance, opts: AppOptions) {
-  // Place here your custom code!
+  await app.register(rootRoutes, { prefix: "/" });
+  await app.register(categoryRoutes, { prefix: "/category" });
+  await app.register(businessRoutes, { prefix: "/business" });
+  await app.register(reviewRoutes, { prefix: "/review" });
+  await app.register(userRoutes, { prefix: "/user" });
 
-  // Do not touch the following lines
-
-  // This loads all plugins defined in plugins
-  // those should be support plugins that are reused
-  // through your application
-  fastify.register(AutoLoad, {
-    dir: path.join(__dirname, 'plugins'),
-    options: { ...opts },
-  });
-
-  // This loads all plugins defined in routes
-  // define your routes in one of these
-  fastify.register(AutoLoad, {
-    dir: path.join(__dirname, 'routes'),
-    options: { ...opts },
-  });
+  return app;
 }
