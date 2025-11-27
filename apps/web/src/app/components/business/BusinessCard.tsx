@@ -36,7 +36,7 @@ export default function BusinessCard({ business }: BusinessCardProps) {
 
         {/* Price badge example */}
         <div className="absolute top-3 right-3 bg-black/70 text-white text-xs px-3 py-1 rounded-full">
-          $$ 
+          ҮНЭ
         </div>
       </div>
 
@@ -70,7 +70,7 @@ export default function BusinessCard({ business }: BusinessCardProps) {
             {business.avgRating?.toFixed(1) || "0.0"}
           </span>
           <span className="text-xs text-zinc-500">
-            ({business.reviewCount ?? 0} reviews)
+            ({business.reviewCount ?? 0} сэтгэгдэл)
           </span>
         </div>
 

@@ -18,7 +18,7 @@ export default function CategoryGrid() {
     <section className="py-16 bg-zinc-50">
       <div className="container mx-auto px-4">
         
-        <h2 className="text-center text-3xl font-bold mb-8">Categories</h2>
+        <h2 className="text-center text-3xl font-bold mb-8">Ангиллууд</h2>
         
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
           {categories.map((c) => {

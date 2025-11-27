@@ -17,5 +17,8 @@
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.17",
     "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.21"
   }
 }

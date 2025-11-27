@@ -3,28 +3,51 @@ import Image from "next/image";
 import Link from "next/link";
 import { Card } from "@/app/components/ui/card";
 
-export default function ReviewCard({ review }: { review: any }) {
+type Review = {
+  id: string;
+  businessId: string;
+  business?: { name?: string } | null;
+  user?: { name?: string; avatarUrl?: string | null } | null;
+  photos?: { url: string }[];
+  createdAt?: string;
+  text?: string | null;
+  useful?: number;
+  funny?: number;
+  cool?: number;
+};
+
+export default function ReviewCard({ review }: { review: Review }) {
+  const userName = review.user?.name ?? "Нэргүй";
+  const businessName = review.business?.name ?? "Бизнес рүү очих";
+  const photos = review.photos ?? [];
+
   return (
     <Card className="p-4 hover:shadow-lg transition bg-white">
       {/* Header */}
       <div className="flex items-center mb-3">
-        
         <div className="ml-3">
-          <p className="font-semibold">{review.user.name}</p>
-          <p className="text-xs text-zinc-500">{new Date(review.createdAt).toLocaleString()}</p>
+          <p className="font-semibold">{userName}</p>
+          {review.createdAt && (
+            <p className="text-xs text-zinc-500">
+              {new Date(review.createdAt).toLocaleString()}
+            </p>
+          )}
         </div>
       </div>
 
       {/* Business Title */}
-      <Link href={`/business/${review.businessId}`} className="font-bold text-lg hover:underline">
-        {review.business.name}
+      <Link
+        href={`/business/${review.businessId}`}
+        className="font-bold text-lg hover:underline"
+      >
+        {businessName}
       </Link>
 
       {/* Photo */}
-      {review.photos.length > 0 && (
+      {photos.length > 0 && photos[0]?.url && (
         <div className="mt-3">
           <Image
-            src={review.photos[0].url}
+            src={photos[0].url}
             width={400}
             height={250}
             alt="Review photo"
@@ -34,12 +57,12 @@ export default function ReviewCard({ review }: { review: any }) {
       )}
 
       {/* Text */}
-      <p className="mt-3 text-zinc-700 line-clamp-3">{review.text}</p>
+      {review.text && <p className="mt-3 text-zinc-700 line-clamp-3">{review.text}</p>}
 
       <div className="flex gap-5 mt-3 text-sm text-zinc-600">
-        <span>👍 {review.useful}</span>
-        <span>😂 {review.funny}</span>
-        <span>😎 {review.cool}</span>
+        <span>Тустай {review.useful ?? 0}</span>
+        <span>Хошигнол {review.funny ?? 0}</span>
+        <span>Дуртай {review.cool ?? 0}</span>
       </div>
     </Card>
   );

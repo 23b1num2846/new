@@ -2,58 +2,55 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("🌱 Starting seed...");
+  console.log("💡 Seed эхэллээ...");
 
-  // ---------------------------------------------------------
-  // 1. USERS
-  // ---------------------------------------------------------
+  // Цэвэрлэх
+  await prisma.reviewRating.deleteMany();
+  await prisma.reviewPhoto.deleteMany();
+  await prisma.review.deleteMany();
+  await prisma.business.deleteMany();
+  await prisma.category.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.reviewCategory.deleteMany();
+
+  // 1. Хэрэглэгчид
   await prisma.user.createMany({
     data: [
       { name: "Бат", password: "hashedpass1" },
       { name: "Сараа", password: "hashedpass2" },
     ],
-    skipDuplicates: true,
   });
-
   const users = await prisma.user.findMany();
-  console.log("✅ Users created:", users.length);
 
-  // ---------------------------------------------------------
-  // 2. CATEGORY
-  // ---------------------------------------------------------
+  // 2. Ангилал
   const food = await prisma.category.create({
     data: { name: "Хоол" },
   });
 
-  console.log("✅ Category created:", food.name);
-
-  // ---------------------------------------------------------
-  // 3. BUSINESSES
-  // ---------------------------------------------------------
+  // 3. Бизнесүүд (lat,lng)
   const businessData = [
     {
       name: "Modern Nomads",
-      description: "Монгол үндэсний хоолны сүлжээ ресторан",
+      description: "Монгол үндэсний хоолны сүлжээ ресторан.",
       address: "УБ, СБД, 1-р хороо",
       phone: "99112233",
       email: "info@modernnomads.mn",
       website: "https://modernnomads.mn",
-      location: "Улаанбаатар",
+      location: "47.9223, 106.9170",
       facebookUrl: "https://facebook.com/modernnomads",
       instagramUrl: "https://instagram.com/modernnomads",
       timetable: "10:00–22:00",
-      logoUrl:
-        "https://yellowbook-assets.s3.ap-southeast-1.amazonaws.com/nomads_logo.png",
+      logoUrl: "https://yellowbook-assets.s3.ap-southeast-1.amazonaws.com/nomads_logo.png",
       categoryId: food.id,
     },
     {
-      name: "BD’s Mongolian BBQ",
-      description: "Mongolian grill стильтэй ресторан",
-      address: "УБ, ХУД, Чингисийн өргөн чөлөө",
+      name: "BDS Mongolian BBQ",
+      description: "Монгол грилл, олон улсын сонирхолтой хоолтой.",
+      address: "УБ, ХУД, 15-р хороо",
       phone: "99001122",
       email: "info@bdsmongolia.mn",
       website: "https://bdsmongolia.mn",
-      location: "Улаанбаатар",
+      location: "47.9145, 106.9150",
       facebookUrl: "https://facebook.com/bdsmongolia",
       instagramUrl: "https://instagram.com/bdsmongolia",
       timetable: "11:00–23:00",
@@ -63,12 +60,12 @@ async function main() {
     },
     {
       name: "Khaan Deli",
-      description: "Барууны болон Монгол хоолны ресторан",
-      address: "УБ, БГД, 4-р хороо",
+      description: "Орчин үеийн монгол болон европ хоолны ресторан.",
+      address: "УБ, БЗД, 4-р хороо",
       phone: "99115566",
       email: "contact@khaandeli.mn",
       website: "https://khaandeli.mn",
-      location: "Улаанбаатар",
+      location: "47.9260, 106.9300",
       facebookUrl: "https://facebook.com/khaandeli",
       instagramUrl: "https://instagram.com/khaandeli",
       timetable: "09:00–22:00",
@@ -78,85 +75,71 @@ async function main() {
     },
   ];
 
-  for (const b of businessData) {
-    await prisma.business.create({ data: b });
-  }
+  await prisma.business.createMany({ data: businessData });
+  const businesses = await prisma.business.findMany({ orderBy: { name: "asc" } });
 
-  const businesses = await prisma.business.findMany();
-  console.log("✅ Businesses created:", businesses.length);
-
-  // ---------------------------------------------------------
-  // 4. REVIEW CATEGORIES
-  // ---------------------------------------------------------
+  // 4. Сэтгэгдлийн ангиллууд
   await prisma.reviewCategory.createMany({
     data: [
-      { name: "Food", order: 1 },
-      { name: "Service", order: 2 },
-      { name: "Ambience", order: 3 },
-      { name: "Cleanliness", order: 4 },
-      { name: "Price", order: 5 },
+      { name: "Хоол", order: 1 },
+      { name: "Үйлчилгээ", order: 2 },
+      { name: "Уур амьсгал", order: 3 },
+      { name: "Цэвэрлэгээ", order: 4 },
+      { name: "Үнэ", order: 5 },
     ],
   });
+  const categories = await prisma.reviewCategory.findMany({ orderBy: { order: "asc" } });
 
-  const categories = await prisma.reviewCategory.findMany();
-  console.log("✅ Review categories created:", categories.length);
-
-  // ---------------------------------------------------------
-  // 5. REVIEWS
-  // ---------------------------------------------------------
-  await prisma.review.create({
-    data: {
-      rating: 5,
-      text: "Modern Nomads үнэхээр таалагдлаа! Хоол амттай, үйлчилгээ хурдан.",
-      userId: users[0].id,
-      businessId: businesses[0].id,
-
-      photos: {
-        create: [
-          { url: "https://yellowbook-assets.s3.ap-southeast-1.amazonaws.com/nomads_logo.png" },
-          { url: "https://yellowbook-assets.s3.ap-southeast-1.amazonaws.com/nomads_logo.png" },
-        ],
+  // 5. Сэтгэгдлүүд
+  if (businesses.length > 0) {
+    await prisma.review.create({
+      data: {
+        rating: 5,
+        text: "Modern Nomads үнэхээр таалагдлаа! Хоол амттай, үйлчилгээ хурдан.",
+        userId: users[0].id,
+        businessId: businesses[0].id,
+        photos: {
+          create: [
+            { url: "https://yellowbook-assets.s3.ap-southeast-1.amazonaws.com/nomads_logo.png" },
+          ],
+        },
+        ratings: {
+          create: [
+            { categoryId: categories[0].id, score: 5 },
+            { categoryId: categories[1].id, score: 5 },
+            { categoryId: categories[2].id, score: 4 },
+            { categoryId: categories[3].id, score: 4 },
+            { categoryId: categories[4].id, score: 3 },
+          ],
+        },
       },
+    });
 
-      ratings: {
-        create: [
-          { categoryId: categories[0].id, score: 5 },
-          { categoryId: categories[1].id, score: 5 },
-          { categoryId: categories[2].id, score: 4 },
-          { categoryId: categories[3].id, score: 4 },
-          { categoryId: categories[4].id, score: 3 },
-        ],
+    await prisma.review.create({
+      data: {
+        rating: 4,
+        text: "Хоол нь боломжийн, үнэ арай өндөр байна.",
+        userId: users[1].id,
+        businessId: businesses[0].id,
+        ratings: {
+          create: [
+            { categoryId: categories[0].id, score: 4 },
+            { categoryId: categories[1].id, score: 5 },
+            { categoryId: categories[2].id, score: 4 },
+            { categoryId: categories[3].id, score: 3 },
+            { categoryId: categories[4].id, score: 3 },
+          ],
+        },
       },
-    },
-  });
+    });
+  }
 
-  await prisma.review.create({
-    data: {
-      rating: 4,
-      text: "Хоол нь боломжийн, үнэ арай өндөр.",
-      userId: users[1].id,
-      businessId: businesses[0].id,
-
-      ratings: {
-        create: [
-          { categoryId: categories[0].id, score: 4 },
-          { categoryId: categories[1].id, score: 5 },
-          { categoryId: categories[2].id, score: 4 },
-          { categoryId: categories[3].id, score: 3 },
-          { categoryId: categories[4].id, score: 3 },
-        ],
-      },
-    },
-  });
-
-  console.log("✅ Reviews created");
-
-  console.log("🎉 SEED COMPLETED SUCCESSFULLY!");
+  console.log("✅ Seed дууслаа!");
 }
 
 main()
   .catch((err) => {
-    console.error("❌ Seed Error:", err);
+    console.error("❌ Seed алдаа:", err);
     process.exit(1);
   })
   .finally(async () => prisma.$disconnect());

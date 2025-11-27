@@ -6,20 +6,40 @@ import { useEffect, useState } from "react";
 import ReviewCard from "../home/ReviewCard";
 import Image from "next/image";
 
-export default function BusinessDetails({ id }: { id: string }) {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+type Business = {
+  id: string;
+  name: string;
+  description: string;
+  address: string;
+  phone: string;
+  timetable: string;
+  logoUrl?: string | null;
+  location: string;
+  reviews: any[];
+};
+
+type Props =
+  | { id: string; business?: never }
+  | { id?: never; business: Business };
+
+export default function BusinessDetails(props: Props) {
+  const [data, setData] = useState<Business | null>(props.business ?? null);
+  const [loading, setLoading] = useState(!props.business);
 
   useEffect(() => {
-    fetch(`http://localhost:3333/business/${id}`)
+    if (props.business) return;
+    const bizId = props.id;
+    if (!bizId) return;
+
+    fetch(`http://localhost:3333/business/${bizId}`)
       .then((res) => res.json())
       .then((d) => {
         setData(d);
         setLoading(false);
       });
-  }, [id]);
+  }, [props.business, props.id]);
 
-  if (loading) {
+  if (loading || !data) {
     return (
       <div className="max-w-6xl mx-auto mt-10">
         <div className="animate-pulse h-10 bg-zinc-200 w-1/3 mb-4"></div>
@@ -33,17 +53,17 @@ export default function BusinessDetails({ id }: { id: string }) {
       <h1 className="text-3xl font-bold mb-3">{data.name}</h1>
 
       <div className="rounded-lg overflow-hidden mb-6">
-        <Image src={data.logoUrl} width={1200} height={600} alt={data.name} />
+        <Image
+          src={data.logoUrl || "/placeholder.jpg"}
+          width={1200}
+          height={600}
+          alt={data.name}
+        />
       </div>
 
       <p className="text-zinc-700 mb-6">{data.description}</p>
 
-      {/* Map
-      <div className="mt-10 mb-6">
-        <MapIsland location={data.location} />
-      </div> */}
-
-      <h2 className="text-2xl font-semibold mb-4">Reviews</h2>
+      <h2 className="text-2xl font-semibold mb-4">Сэтгэгдлүүд</h2>
 
       <div className="grid md:grid-cols-2 gap-6">
         {data.reviews.map((r: any) => (
