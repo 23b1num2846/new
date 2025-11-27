@@ -1,34 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { FastifyInstance } from "fastify";
-import { CreateReviewSchema } from "@yellows/contract";
-import { PrismaClient } from "@prisma/client";
+import { FastifyRequest, FastifyReply } from "fastify";
+import { CreateBusinessSchema } from "@yellows/contract";
+import prisma from "../../plugins/prisma";
 
-const prisma = new PrismaClient();
+export default async function create(req: FastifyRequest, reply: FastifyReply) {
+  const data = CreateBusinessSchema.parse(req.body);
 
-export default async function reviewCreateRoutes(app: FastifyInstance) {
-  app.post("/", async (req, reply) => {
-    const body = CreateReviewSchema.parse((req as any).body);
-
-    const created = await prisma.review.create({
-      data: {
-        rating: body.rating,
-        text: body.text ?? undefined,
-        userId: body.userId,
-        businessId: body.businessId,
-        photos: { create: body.photos.map((url) => ({ url })) },
-        ratings: {
-          create: body.ratings.map((r) => ({
-            categoryId: r.categoryId,
-            score: r.score,
-          })),
-        },
-      },
-      include: {
-        photos: true,
-        ratings: { include: { category: true } },
-      },
-    });
-
-    reply.code(201).send(created);
+  const created = await prisma.business.create({
+    data,
   });
+
+  reply.code(201).send(created);
 }

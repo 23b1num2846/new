@@ -1,40 +1,33 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { FastifyInstance } from "fastify";
-import { PrismaClient } from "@prisma/client";
+import { FastifyRequest, FastifyReply } from "fastify";
+import prisma from "../../plugins/prisma";
 
-const prisma = new PrismaClient();
+export default async function single(req: FastifyRequest, reply: FastifyReply) {
+  const { id } = req.params as any;
 
-export default async function businessSingleRoutes(app: FastifyInstance) {
-  app.get("/:id", async (req, reply) => {
-    const { id } = (req as any).params;
-
-    const business = await prisma.business.findUnique({
-      where: { id },
-      include: {
-        category: true,
-        reviews: {
-          include: {
-            user: true,
-            photos: true,
-            ratings: { include: { category: true } },
-          },
-          orderBy: { createdAt: "desc" },
+  const business = await prisma.business.findUnique({
+    where: { id },
+    include: {
+      category: true,
+      reviews: {
+        include: {
+          user: true,
+          photos: true,
+          ratings: { include: { category: true } },
         },
+        orderBy: { createdAt: "desc" },
       },
-    });
+    },
+  });
 
-    if (!business) return reply.code(404).send({ message: "Business not found" });
+  if (!business) return reply.code(404).send({ message: "Business not found" });
 
-    const ratings = business.reviews.map((r) => r.rating);
-    const avg =
-      ratings.length === 0
-        ? null
-        : ratings.reduce((s, v) => s + v, 0) / ratings.length;
+  const ratings = business.reviews.map((r) => r.rating);
+  const avg =
+    ratings.length === 0 ? null : ratings.reduce((s, v) => s + v, 0) / ratings.length;
 
-    return {
-      ...business,
-      avgRating: avg,
-      reviewCount: ratings.length,
-    };
+  reply.send({
+    ...business,
+    avgRating: avg,
+    reviewCount: ratings.length,
   });
 }

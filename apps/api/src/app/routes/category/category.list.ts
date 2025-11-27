@@ -1,10 +1,10 @@
-import { FastifyInstance } from "fastify";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../../plugins/prisma";
+import { FastifyRequest, FastifyReply } from "fastify";
 
-const prisma = new PrismaClient();
-
-export default async function categoryListRoutes(app: FastifyInstance) {
-  app.get("/", async () => {
-    return { data: await prisma.category.findMany() };
+export default async function list(req: FastifyRequest, reply: FastifyReply) {
+  const categories = await prisma.category.findMany({
+    orderBy: { name: "asc" },
   });
+  
+  reply.send({ data: categories });
 }

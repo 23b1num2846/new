@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { FastifyInstance } from "fastify";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../../plugins/prisma";
 import { z } from "zod";
-
-const prisma = new PrismaClient();
 
 const CreateUserSchema = z.object({
   name: z.string(),

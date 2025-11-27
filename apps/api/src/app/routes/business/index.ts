@@ -1,10 +1,10 @@
 import { FastifyInstance } from "fastify";
-import businessListRoutes from "./business.list";
-import businessSingleRoutes from "./business.single";
-import businessCreateRoutes from "./business.create";
+import list from "./business.list";
+import single from "./business.single";
+import create from "./business.create";
 
 export default async function businessRoutes(app: FastifyInstance) {
-  await app.register(businessListRoutes);
-  await app.register(businessSingleRoutes);
-  await app.register(businessCreateRoutes);
+  app.get("/", list);           // GET /api/business
+  app.get("/:id", single);      // GET /api/business/:id
+  app.post("/", create);        // POST /api/business
 }

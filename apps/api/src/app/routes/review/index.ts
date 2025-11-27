@@ -1,10 +1,10 @@
 import { FastifyInstance } from "fastify";
-import reviewCreateRoutes from "./review.create";
-import reviewListRoutes from "./review.list";
-import reviewStatsRoutes from "./review.stats";
+import list from "./review.list";
+import create from "./review.create";
+import stats from "./review.stats";
 
 export default async function reviewRoutes(app: FastifyInstance) {
-  await app.register(reviewCreateRoutes);
-  await app.register(reviewListRoutes);
-  await app.register(reviewStatsRoutes);
+  app.get("/list", list);
+  app.post("/", create);
+  app.get("/stats/:businessId", stats);
 }

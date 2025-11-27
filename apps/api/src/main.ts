@@ -1,18 +1,21 @@
 import Fastify from "fastify";
-import buildApp from "./app/app";
+import cors from "@fastify/cors";
+import rootRoutes from "./app/routes/root";
 
-async function main() {
-  const app = Fastify({ logger: true });
+const server = Fastify({ logger: true });
 
-  await buildApp(app);
+async function start() {
+  await server.register(cors, {
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  });
 
-  const port = Number(process.env.PORT ?? 3333);
+  await server.register(rootRoutes, { prefix: "/api" });
 
-  await app.listen({ port, host: "0.0.0.0" });
-  console.log(`🚀 API running on http://localhost:${port}`);
+  server.listen({ port: 3333, host: "0.0.0.0" }, (err) => {
+    if (err) throw err;
+    console.log("API running at http://localhost:3333");
+  });
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+start();
