@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { FastifyInstance } from "fastify";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../../plugins/prisma";
 
 export default async function userSingleRoutes(app: FastifyInstance) {
   app.get("/:id", async (req, reply) => {
@@ -15,6 +13,6 @@ export default async function userSingleRoutes(app: FastifyInstance) {
 
     if (!user) return reply.code(404).send({ message: "User not found" });
 
-    return user;
+    reply.send(user);
   });
 }

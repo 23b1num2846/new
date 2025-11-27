@@ -113,8 +113,8 @@ async function main() {
 
       photos: {
         create: [
-          { url: "https://yellowbook-assets.s3.../nomads-food1.jpg" },
-          { url: "https://yellowbook-assets.s3.../nomads-interior.jpg" },
+          { url: "https://yellowbook-assets.s3.ap-southeast-1.amazonaws.com/nomads_logo.png" },
+          { url: "https://yellowbook-assets.s3.ap-southeast-1.amazonaws.com/nomads_logo.png" },
         ],
       },
 

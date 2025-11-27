@@ -1,23 +1,20 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { FastifyInstance } from "fastify";
-import { PrismaClient } from "@prisma/client";
+import { FastifyRequest, FastifyReply } from "fastify";
+import prisma from "../../plugins/prisma";
 
-const prisma = new PrismaClient();
+export default async function list(req: FastifyRequest, reply: FastifyReply) {
+  const { page = 1, limit = 12 } = req.query as any;
+  const skip = (page - 1) * limit;
 
-export default async function reviewListRoutes(app: FastifyInstance) {
-  app.get("/business/:businessId", async (req) => {
-    const { businessId } = (req as any).params;
-
-    const reviews = await prisma.review.findMany({
-      where: { businessId },
-      include: {
-        user: true,
-        photos: true,
-        ratings: { include: { category: true } },
-      },
-      orderBy: { createdAt: "desc" },
-    });
-
-    return { data: reviews };
+  const reviews = await prisma.review.findMany({
+    skip,
+    take: Number(limit),
+    include: {
+      user: true,
+      business: true,
+      photos: true,
+    },
+    orderBy: { createdAt: "desc" },
   });
+
+  reply.send({ data: reviews });
 }
