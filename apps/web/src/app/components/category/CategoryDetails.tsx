@@ -1,23 +1,50 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import { useEffect, useState } from "react";
 import BusinessCard from "../business/BusinessCard";
 
-export default function CategoryDetails({ id }: { id: string }) {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+type Business = {
+  id: string;
+  name: string;
+  description: string;
+  address: string;
+  phone: string;
+  timetable: string;
+  logoUrl?: string | null;
+  avgRating?: number;
+  reviewCount?: number;
+  category?: { name: string } | null;
+};
+
+type Category = {
+  id: string;
+  name: string;
+  businesses: Business[];
+};
+
+type Props =
+  | { id: string; category?: never }
+  | { id?: never; category: Category };
+
+export default function CategoryDetails(props: Props) {
+  const [data, setData] = useState<Category | null>(props.category ?? null);
+  const [loading, setLoading] = useState(!props.category);
 
   useEffect(() => {
-    fetch(`http://localhost:3333/category/${id}`)
+    if (props.category) return;
+    const categoryId = props.id;
+    if (!categoryId) return;
+
+    fetch(`http://localhost:3333/category/${categoryId}`)
       .then((r) => r.json())
       .then((d) => {
         setData(d);
         setLoading(false);
       });
-  }, [id]);
+  }, [props.category, props.id]);
 
-  if (loading) {
+  if (loading || !data) {
     return <div className="animate-pulse h-6 w-1/3 bg-zinc-200 mx-auto mt-10" />;
   }
 
@@ -26,7 +53,7 @@ export default function CategoryDetails({ id }: { id: string }) {
       <h1 className="text-3xl font-bold mb-8">{data.name}</h1>
 
       <div className="grid md:grid-cols-3 gap-6">
-        {data.businesses.map((b: any) => (
+        {data.businesses.map((b) => (
           <BusinessCard key={b.id} business={b} />
         ))}
       </div>

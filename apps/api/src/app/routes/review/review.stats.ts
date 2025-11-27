@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FastifyRequest, FastifyReply } from "fastify";
 import prisma from "../../plugins/prisma";
 
@@ -8,14 +7,12 @@ export default async function stats(
 ) {
   const { businessId } = req.params;
 
-  // Overall rating + count
   const overall = await prisma.review.aggregate({
     where: { businessId },
     _avg: { rating: true },
     _count: { _all: true },
   });
 
-  // Group by rating categories
   const ratingGroups = await prisma.reviewRating.groupBy({
     by: ["categoryId"],
     where: { review: { businessId } },

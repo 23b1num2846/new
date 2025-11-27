@@ -1,36 +1,57 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import { useEffect, useState } from "react";
 import BusinessCard from "./BusinessCard";
 
-export default function BusinessGrid() {
-  const [businesses, setBusinesses] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+type Business = {
+  id: string;
+  name: string;
+  description: string;
+  address: string;
+  phone: string;
+  timetable: string;
+  logoUrl?: string | null;
+  avgRating?: number;
+  reviewCount?: number;
+  category?: { name: string } | null;
+};
 
-  async function load() {
-    try {
-      const res = await fetch("http://127.0.0.1:3333/api/business");
-      const json = await res.json();
-      console.log("Loaded businesses: ", json);
+type Props = {
+  businesses?: Business[];
+  title?: string;
+};
 
-      setBusinesses(json.data ?? []);
-    } catch (err) {
-      console.error("Failed to load businesses", err);
-    } finally {
-      setLoading(false);
-    }
-  }
+export default function BusinessGrid({
+  businesses: initial,
+  title = "Шилдэг бизнесүүд",
+}: Props) {
+  const [businesses, setBusinesses] = useState<Business[]>(initial ?? []);
+  const [loading, setLoading] = useState(!initial);
 
   useEffect(() => {
-    load();
-  }, []);
+    if (initial && initial.length > 0) return;
 
-  if (loading) return <div>Loading...</div>;
+    async function load() {
+      try {
+        const res = await fetch("http://127.0.0.1:3333/api/business");
+        const json = await res.json();
+        setBusinesses(json.data ?? []);
+      } catch (err) {
+        console.error("Failed to load businesses", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    load();
+  }, [initial]);
+
+  if (loading) return <div>Уншиж байна...</div>;
 
   return (
     <section className="max-w-7xl mx-auto px-4 mt-10">
-      <h2 className="text-2xl font-semibold mb-4">Top Businesses</h2>
+      <h2 className="text-2xl font-semibold mb-4">{title}</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {businesses.map((b) => (
