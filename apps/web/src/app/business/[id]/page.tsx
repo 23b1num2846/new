@@ -4,18 +4,21 @@ import ReviewsSection from "@/app/components/home/RecentReviews";
 import MapIsland from "@/app/components/maps/MapIsland";
 import { Suspense } from "react";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0; 
+export const revalidate = 3600;
 
 export async function generateStaticParams() {
   try {
     const res = await fetch("http://localhost:3333/api/business", {
       next: { revalidate: 3600 },
     });
+    if (!res.ok) {
+      throw new Error(`Request failed with status ${res.status}`);
+    }
+
     const { data } = await res.json();
     return data.map((b: any) => ({ id: b.id }));
   } catch (err) {
-    console.warn("generateStaticParams failed, skipping prerender", err);
+    console.warn("Failed to pre-render business detail paths", err);
     return [];
   }
 }
@@ -23,13 +26,24 @@ export async function generateStaticParams() {
 export default async function BusinessSingle({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
-  const { id } = await params;
+  const { id } = params;
+  let biz: any;
 
-  const biz = await fetch(`http://localhost:3333/api/business/${id}`, {
-    cache: "no-store",
-  }).then((r) => r.json());
+  try {
+    const res = await fetch(`http://localhost:3333/api/business/${id}`, {
+      next: { tags: [`business-${id}`] },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Request failed with status ${res.status}`);
+    }
+
+    biz = await res.json();
+  } catch (error) {
+    console.error(`Failed to load business ${id}`, error);
+  }
 
   if (!biz || !biz.id) {
     return (
@@ -41,9 +55,11 @@ export default async function BusinessSingle({
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10 space-y-8">
+        
       <BusinessDetails business={biz} />
 
-      <Suspense fallback={<p>Loading reviews...</p>}>
+      <Suspense fallback={<p>Сэтгэгдэл ачаалж байна...</p>}>
+      
         <ReviewsSection businessId={biz.id} initialReviews={biz.reviews ?? []} />
       </Suspense>
 

@@ -25,7 +25,6 @@ export default function BusinessCard({ business }: BusinessCardProps) {
       href={`/business/${business.id}`}
       className="block rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-lg transition-all border border-zinc-100"
     >
-      {/* Image */}
       <div className="relative h-56 w-full">
         <Image
           src={business.logoUrl || "/placeholder.jpg"}
@@ -33,14 +32,11 @@ export default function BusinessCard({ business }: BusinessCardProps) {
           fill
           className="object-cover"
         />
-
-        {/* Price badge example */}
         <div className="absolute top-3 right-3 bg-black/70 text-white text-xs px-3 py-1 rounded-full">
           ҮНЭ
         </div>
       </div>
 
-      {/* Content */}
       <div className="p-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold text-zinc-900">
