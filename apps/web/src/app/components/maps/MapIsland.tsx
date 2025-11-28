@@ -33,7 +33,7 @@ function parseLocation(raw?: string): [number, number] | null {
 }
 
 export default function MapIsland({ location, businesses }: Props) {
-  // If single business page:
+
   if (location && typeof location === "string") {
     const center = parseLocation(location);
     if (!center) return <p>No map data.</p>;
