@@ -26,9 +26,9 @@ export async function generateStaticParams() {
 export default async function BusinessSingle({
   params,
 }: {
-  params: { id: string };
+  params: { id: string } | Promise<{ id: string }>;
 }) {
-  const { id } = params;
+  const { id } = await Promise.resolve(params);
   let biz: any;
 
   try {

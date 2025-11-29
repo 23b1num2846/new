@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import ReviewCard from "../home/ReviewCard";
 import Image from "next/image";
 
+
 type Business = {
   id: string;
   name: string;
@@ -31,12 +32,15 @@ export default function BusinessDetails(props: Props) {
     const bizId = props.id;
     if (!bizId) return;
 
-    fetch(`http://localhost:3333/business/${bizId}`)
+    fetch(`http://localhost:3333/api/business/${bizId}`)
       .then((res) => res.json())
       .then((d) => {
         setData(d);
-        setLoading(false);
-      });
+      })
+      .catch((err) => {
+        console.error("Failed to load business", err);
+      })
+      .finally(() => setLoading(false));
   }, [props.business, props.id]);
 
   if (loading || !data) {

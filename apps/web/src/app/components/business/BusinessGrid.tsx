@@ -1,24 +1,11 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import BusinessCard from "./BusinessCard";
-
-type Business = {
-  id: string;
-  name: string;
-  description: string;
-  address: string;
-  phone: string;
-  timetable: string;
-  logoUrl?: string | null;
-  avgRating?: number;
-  reviewCount?: number;
-  category?: { name: string } | null;
-};
+import type { BusinessDto } from "@yellows/contract";
 
 type Props = {
-  businesses?: Business[];
+  businesses?: BusinessDto[];
   title?: string;
   emptyMessage?: string;
 };
@@ -28,7 +15,7 @@ export default function BusinessGrid({
   title = "Шилдэг бизнесүүд",
   emptyMessage = "Бизнес олдсонгүй.",
 }: Props) {
-  const [businesses, setBusinesses] = useState<Business[]>(initial ?? []);
+  const [businesses, setBusinesses] = useState<BusinessDto[]>(initial ?? []);
   const [loading, setLoading] = useState(!initial);
 
   useEffect(() => {
@@ -58,11 +45,11 @@ export default function BusinessGrid({
       {businesses.length === 0 ? (
         <p className="text-sm text-zinc-600">{emptyMessage}</p>
       ) : (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {businesses.map((b) => (
-          <BusinessCard key={b.id} business={b} />
-        ))}
-      </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {businesses.map((b) => (
+            <BusinessCard key={b.id} business={b} />
+          ))}
+        </div>
       )}
     </section>
   );
