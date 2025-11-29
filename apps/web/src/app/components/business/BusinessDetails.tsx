@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import ReviewCard from "../home/ReviewCard";
 import Image from "next/image";
 
+
 type Business = {
   id: string;
   name: string;
