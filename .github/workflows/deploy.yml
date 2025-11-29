@@ -9,29 +9,32 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      NODE_OPTIONS: "--max_old_space_size=4096"
+      NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
     steps:
-      # Checkout
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # Node Setup
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      # PNPM install
       - name: Install PNPM
         run: npm install -g pnpm
 
-      # Install dependencies
       - name: Install dependencies
         run: pnpm install
 
-      # AWS Credentials
+      - name: Prisma Generate
+        run: pnpm prisma generate
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
@@ -39,23 +42,15 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # ECR Login
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
-      # --------------------------------------------------
-      # NX 19 Compatible Affected Detector (fully working)
-      # --------------------------------------------------
       - name: Detect affected projects
         id: affected
         run: |
           AFFECTED=$(npx nx show projects --affected --base=origin/main | tr '\n' ' ')
           echo "projects=$AFFECTED" >> $GITHUB_OUTPUT
-          echo "Affected: $AFFECTED"
 
-      # ------------------------
-      # API Docker Build & Push
-      # ------------------------
       - name: Build API Image
         if: contains(steps.affected.outputs.projects, 'api')
         run: |
@@ -70,6 +65,16 @@ jobs:
           docker push \
             ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY_API }}:latest
 
-      # ------------------------
-      # WEB Docker Build & Push
-      #
+      - name: Build Web Image
+        if: contains(steps.affected.outputs.projects, 'web')
+        run: |
+          docker build \
+            -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY_WEB }}:latest \
+            -f apps/web/Dockerfile \
+            .
+
+      - name: Push Web Image
+        if: contains(steps.affected.outputs.projects, 'web')
+        run: |
+          docker push \
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY_WEB }}:latest
