@@ -21,10 +21,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
+          cache: 'npm'   # ← PNPM CACHE АШИГЛАЖ БОЛОХГҮЙ
 
       - name: Install PNPM
-        run: npm install -g pnpm
+        run: npm install -g pnpm   # ← ЭНЭГЭЭР PNPM-г PATH-д бүртгэнэ
 
       - name: Install Dependencies
         run: pnpm install
