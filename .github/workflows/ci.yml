@@ -1,41 +1,77 @@
-name: CI
+name: Deploy to AWS ECR
 
 on:
   push:
     branches:
       - master
-  pull_request:
-
-permissions:
-  actions: read
-  contents: read
 
 jobs:
-  main:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-        with:
-          filter: tree:0
-          fetch-depth: 0
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-      # This enables task distribution via Nx Cloud
-      # Run this command as early as possible, before dependencies are installed
-      # Learn more at https://nx.dev/ci/reference/nx-cloud-cli#npx-nxcloud-startcirun
-      # Uncomment this line to enable task distribution
-      # - run: npx nx start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="build"
-
-      # Cache node_modules
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
 
-      - run: npm ci
+      - name: Install PNPM
+        run: npm install -g pnpm
 
-      # Prepend any command with "nx-cloud record --" to record its logs to Nx Cloud
-      # - run: npx nx-cloud record -- echo Hello World
-      - run: npx nx run-many -t lint test build typecheck
-      # Nx Cloud recommends fixes for failures to help you get CI green faster. Learn more: https://nx.dev/ci/features/self-healing-ci
-      - run: npx nx fix-ci
-        if: always()
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # -------------------------
+      # 🔥 Nx Affected Build
+      # -------------------------
+      - name: Print Affected Projects
+        id: affected
+        run: |
+          echo "projects=$(npx nx print-affected --select=projects --base=origin/master)" >> $GITHUB_OUTPUT
+
+      # -------------------------
+      # Build API Image
+      # -------------------------
+      - name: Build API Image
+        if: contains(steps.affected.outputs.projects, 'api')
+        run: |
+          docker build \
+            -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY_API }}:latest \
+            -f apps/api/Dockerfile \
+            .
+
+      - name: Push API
+        if: contains(steps.affected.outputs.projects, 'api')
+        run: |
+          docker push \
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY_API }}:latest
+
+      # -------------------------
+      # Build Web Image
+      # -------------------------
+      - name: Build Web Image
+        if: contains(steps.affected.outputs.projects, 'web')
+        run: |
+          docker build \
+            -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY_WEB }}:latest \
+            -f apps/web/Dockerfile \
+            .
+
+      - name: Push Web
+        if: contains(steps.affected.outputs.projects, 'web')
+        run: |
+          docker push \
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY_WEB }}:latest
