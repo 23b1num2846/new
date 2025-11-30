@@ -5,37 +5,16 @@ import ReviewCard from "./ReviewCard";
 import { Button } from "@/app/components/ui/button";
 import { Skeleton } from "@/app/components/ui/skeleton";
 import { fetchJson, mockData } from "@/app/lib/api";
-
-type Review = {
-  id: string;
-  businessId: string;
-  rating?: number;
-  text?: string | null;
-  useful?: number;
-  funny?: number;
-  cool?: number;
-  createdAt?: string;
-  userId?: string;
-  business?: { name?: string } | null;
-  user?: { name?: string; avatarUrl?: string | null } | null;
-  photos?: { id?: string; url: string }[];
-  ratings?: {
-    id?: string;
-    reviewId?: string;
-    categoryId?: string;
-    score?: number;
-    category?: { name?: string } | null;
-  }[];
-};
+import type { ReviewWithMeta } from "@/app/types/review";
 
 type Props = {
   businessId?: string;
-  initialReviews?: Review[];
+  initialReviews?: ReviewWithMeta[];
 };
 
 export default function RecentReviews({ businessId, initialReviews = [] }: Props) {
   const [page, setPage] = useState(1);
-  const [reviews, setReviews] = useState<Review[]>(initialReviews);
+  const [reviews, setReviews] = useState<ReviewWithMeta[]>(initialReviews);
   const [loading, setLoading] = useState(false);
   const [isEnd, setIsEnd] = useState(false);
 
@@ -49,7 +28,9 @@ export default function RecentReviews({ businessId, initialReviews = [] }: Props
         ? `/api/review/business/${businessId}?page=${page}&limit=12`
         : `/api/reviews/list?page=${page}&limit=12`;
 
-      const res = await fetchJson<{ data: Review[] }>(url, undefined, { data: mockData.reviews });
+      const res = await fetchJson<{ data: ReviewWithMeta[] }>(url, undefined, {
+        data: mockData.reviews as ReviewWithMeta[],
+      });
       const newReviews = res?.data ?? [];
 
       if (newReviews.length === 0) {
