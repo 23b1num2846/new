@@ -5,6 +5,7 @@ import ReviewCard from "./ReviewCard";
 import { Button } from "@/app/components/ui/button";
 import { Skeleton } from "@/app/components/ui/skeleton";
 import { fetchJson, mockData } from "@/app/lib/api";
+import type { ReviewDto } from "@yellows/contract";
 
 type Review = ReviewDto & {
   business?: { name?: string } | null;
