@@ -6,16 +6,9 @@ import { Button } from "@/app/components/ui/button";
 import { Skeleton } from "@/app/components/ui/skeleton";
 import { fetchJson, mockData } from "@/app/lib/api";
 
-type Review = {
-  id: string;
-  createdAt: string;
-  text?: string | null;
-  useful: number;
-  funny: number;
-  cool: number;
-  businessId: string;
-  business?: { name: string } | null;
-  user?: { name: string; avatarUrl?: string | null } | null;
+type Review = ReviewDto & {
+  business?: { name?: string } | null;
+  user?: { name?: string; avatarUrl?: string | null } | null;
   photos?: { id?: string; url: string }[];
 };
 
