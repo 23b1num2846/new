@@ -1,20 +1,21 @@
-# ------------------------
-# 1) Builder stage
-# ------------------------
 FROM node:20-alpine AS builder
 
+ENV CI=true
+
 WORKDIR /app
+
 COPY . .
 
 RUN npm install -g pnpm
+
 RUN pnpm install
 
-# Nx API build
-RUN pnpm nx build api
+# Prisma generate
+RUN pnpm nx run @yellows/api:generate:prisma
 
-# ------------------------
-# 2) Runtime stage
-# ------------------------
+# Build API
+RUN pnpm nx run @yellows/api:build:production
+
 FROM node:20-alpine AS runner
 
 WORKDIR /app
@@ -22,7 +23,5 @@ WORKDIR /app
 COPY --from=builder /app/dist/apps/api ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
-
-EXPOSE 3333
 
 CMD ["node", "dist/main.js"]
