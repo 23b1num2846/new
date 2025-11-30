@@ -2,19 +2,35 @@ FROM node:20-alpine AS builder
 ENV CI=true
 WORKDIR /app
 
+# Copy all monorepo files
 COPY . .
 
+# Install pnpm
 RUN npm install -g pnpm
-RUN pnpm install
-RUN pnpm prisma generate
-RUN pnpm nx build @yellows/api --prod
 
+# Install all dependencies for all workspace packages
+RUN pnpm install
+
+# Build ALL libs/apps using Nx
+RUN pnpm nx run-many -t build
+
+# -----------------
+# Final Run Image
+# -----------------
 FROM node:20-alpine
 WORKDIR /app
 
-COPY --from=builder /app/dist/apps/api .
-COPY --from=builder /app/node_modules ./node_modules
+# Copy API build output
+COPY --from=builder /app/dist/apps/api ./
+
+# Copy built libs (contract, config, etc)
+COPY --from=builder /app/dist/libs ./dist/libs
+
+# Copy prisma
 COPY --from=builder /app/prisma ./prisma
+
+# Install production dependencies only
+COPY --from=builder /app/node_modules ./node_modules
 
 EXPOSE 3333
 CMD ["node", "main.js"]
