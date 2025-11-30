@@ -2,15 +2,11 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
 
-permissions:
-  contents: read
-
 jobs:
-  main:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,13 +17,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'   # ← PNPM CACHE АШИГЛАЖ БОЛОХГҮЙ
+          cache: 'pnpm'
 
-      - name: Install PNPM
-        run: npm install -g pnpm   # ← ЭНЭГЭЭР PNPM-г PATH-д бүртгэнэ
+      - name: Install pnpm
+        run: npm install -g pnpm
 
-      - name: Install Dependencies
+      - name: Install deps
         run: pnpm install
 
-      - name: Lint / Test / Typecheck / Build
-        run: npx nx run-many -t lint test typecheck build
+      - name: Generate Prisma
+        run: pnpm nx run @yellows/api:generate:prisma
+
+      - name: Build all
+        run: pnpm nx run-many -t build typecheck lint
