@@ -3,20 +3,19 @@ import BusinessDetails from "@/app/components/business/BusinessDetails";
 import ReviewsSection from "@/app/components/home/RecentReviews";
 import MapIsland from "@/app/components/maps/MapIsland";
 import { Suspense } from "react";
+import { fetchJson, mockData, pickBusiness } from "@/app/lib/api";
+import type { BusinessDto } from "@yellows/contract";
 
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
   try {
-    const res = await fetch("http://localhost:3333/api/business", {
-      next: { revalidate: 3600 },
-    });
-    if (!res.ok) {
-      throw new Error(`Request failed with status ${res.status}`);
-    }
-
-    const { data } = await res.json();
-    return data.map((b: any) => ({ id: b.id }));
+    const { data } = await fetchJson<{ data: BusinessDto[] }>(
+      "/api/business",
+      { next: { revalidate: 3600 } },
+      mockData.businessList
+    );
+    return data.map((b) => ({ id: b.id }));
   } catch (err) {
     console.warn("Failed to pre-render business detail paths", err);
     return [];
@@ -29,37 +28,26 @@ export default async function BusinessSingle({
   params: { id: string } | Promise<{ id: string }>;
 }) {
   const { id } = await Promise.resolve(params);
-  let biz: any;
-
-  try {
-    const res = await fetch(`http://localhost:3333/api/business/${id}`, {
-      next: { tags: [`business-${id}`] },
-    });
-
-    if (!res.ok) {
-      throw new Error(`Request failed with status ${res.status}`);
-    }
-
-    biz = await res.json();
-  } catch (error) {
-    console.error(`Failed to load business ${id}`, error);
-  }
+  const fallback = pickBusiness(id);
+  const biz = await fetchJson<BusinessDto | null>(
+    `/api/business/${id}`,
+    { next: { tags: [`business-${id}`] } },
+    fallback ?? null
+  );
 
   if (!biz || !biz.id) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-10">
-        <p className="text-center text-red-500">Бизнес олдсонгүй.</p>
+        <p className="text-center text-red-500">Business not found.</p>
       </div>
     );
   }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10 space-y-8">
-        
       <BusinessDetails business={biz} />
 
-      <Suspense fallback={<p>Сэтгэгдэл ачаалж байна...</p>}>
-      
+      <Suspense fallback={<p>Loading reviews...</p>}>
         <ReviewsSection businessId={biz.id} initialReviews={biz.reviews ?? []} />
       </Suspense>
 

@@ -1,34 +1,18 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import BusinessCard from "../business/BusinessCard";
-
-type Business = {
-  id: string;
-  name: string;
-  description: string;
-  address: string;
-  phone: string;
-  timetable: string;
-  logoUrl?: string | null;
-  avgRating?: number;
-  reviewCount?: number;
-  category?: { name: string } | null;
-};
-
-type Category = {
-  id: string;
-  name: string;
-  businesses: Business[];
-};
+import type { BusinessDto, CategoryDto } from "@yellows/contract";
+import { fetchJson, mockData } from "@/app/lib/api";
 
 type Props =
   | { id: string; category?: never }
-  | { id?: never; category: Category };
+  | { id?: never; category: CategoryDto & { businesses: BusinessDto[] } };
 
 export default function CategoryDetails(props: Props) {
-  const [data, setData] = useState<Category | null>(props.category ?? null);
+  const [data, setData] = useState<(CategoryDto & { businesses: BusinessDto[] }) | null>(
+    props.category ?? null
+  );
   const [loading, setLoading] = useState(!props.category);
 
   useEffect(() => {
@@ -36,12 +20,13 @@ export default function CategoryDetails(props: Props) {
     const categoryId = props.id;
     if (!categoryId) return;
 
-    fetch(`http://localhost:3333/category/${categoryId}`)
-      .then((r) => r.json())
-      .then((d) => {
-        setData(d);
-        setLoading(false);
-      });
+    fetchJson<CategoryDto & { businesses: BusinessDto[] }>(
+      `/api/category/${categoryId}`,
+      undefined,
+      { ...mockData.categories[0], businesses: mockData.businesses }
+    )
+      .then((d) => setData(d))
+      .finally(() => setLoading(false));
   }, [props.category, props.id]);
 
   if (loading || !data) {

@@ -1,13 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import BusinessGrid from "@/app/components/business/BusinessGrid";
 import CategoryDetails from "@/app/components/category/CategoryDetails";
+import { fetchJson, mockData } from "@/app/lib/api";
+import type { BusinessDto, CategoryDto } from "@yellows/contract";
 
 export const revalidate = 120;
 
 async function getCategory(id: string) {
-  return fetch(`http://localhost:3333/api/category/${id}`, {
-    next: { revalidate: 120 },
-  }).then((r) => r.json());
+  return fetchJson<CategoryDto & { businesses?: BusinessDto[] }>(
+    `/api/category/${id}`,
+    { next: { revalidate: 120 } },
+    {
+      ...mockData.categories[0],
+      businesses: mockData.businesses,
+    }
+  );
 }
 
 export default async function CategorySingle({ params }: any) {
@@ -16,7 +23,7 @@ export default async function CategorySingle({ params }: any) {
   return (
     <div className="max-w-6xl mx-auto px-4 py-10 space-y-6">
       <CategoryDetails category={data} />
-      <BusinessGrid businesses={data.businesses} title="Энэ ангиллын бизнесүүд" />
+      <BusinessGrid businesses={data.businesses} title="Businesses in this category" />
     </div>
   );
 }

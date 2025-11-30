@@ -4,8 +4,10 @@ import { Suspense } from "react";
 import SearchBar from "@/app/components/layout/SearchBar";
 import BusinessGrid from "@/app/components/business/BusinessGrid";
 import MapIsland from "@/app/components/maps/MapIsland";
+import { fetchJson, mockData } from "@/app/lib/api";
+import type { BusinessDto } from "@yellows/contract";
 
-export const dynamic = "force-dynamic"; 
+export const dynamic = "force-dynamic";
 
 export default async function SearchPage({
   searchParams,
@@ -14,12 +16,15 @@ export default async function SearchPage({
 }) {
   const q = searchParams?.q ?? "";
 
-  const res = await fetch(
-    `http://localhost:3333/api/business/search?q=${q}`,
-    { cache: "no-store" }
+  const { data } = await fetchJson<{ data: BusinessDto[] }>(
+    `/api/business/search?q=${q}`,
+    { cache: "no-store" },
+    {
+      data: mockData.businesses.filter((biz) =>
+        biz.name.toLowerCase().includes(q.toLowerCase())
+      ),
+    }
   );
-
-  const { data } = await res.json();
   const hasResults = Array.isArray(data) && data.length > 0;
 
   return (
@@ -27,10 +32,10 @@ export default async function SearchPage({
       <SearchBar defaultValue={q} />
 
       {!hasResults ? (
-        <p className="text-center text-sm text-zinc-600">Илэрц олдсонгүй.</p>
+        <p className="text-center text-sm text-zinc-600">No matching businesses found.</p>
       ) : (
         <>
-          <Suspense fallback={<p>Ачаалж байна...</p>}>
+          <Suspense fallback={<p>Loading results...</p>}>
             <BusinessGrid businesses={data} />
           </Suspense>
           <MapIsland businesses={data} />

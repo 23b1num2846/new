@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import ReviewCard from "./ReviewCard";
 import { Button } from "@/app/components/ui/button";
 import { Skeleton } from "@/app/components/ui/skeleton";
+import { fetchJson, mockData } from "@/app/lib/api";
 
 type Review = {
   id: string;
@@ -36,12 +37,15 @@ export default function RecentReviews({ businessId, initialReviews = [] }: Props
 
     try {
       const url = businessId
-        ? `http://localhost:3333/api/review/business/${businessId}?page=${page}&limit=12`
-        : `http://localhost:3333/api/reviews/list?page=${page}&limit=12`;
+        ? `/api/review/business/${businessId}?page=${page}&limit=12`
+        : `/api/reviews/list?page=${page}&limit=12`;
 
-      const res = await fetch(url);
-      const data = await res.json();
-      const newReviews = data?.data ?? [];
+      const res = await fetchJson<{ data: Review[] }>(
+        url,
+        undefined,
+        { data: mockData.reviews }
+      );
+      const newReviews = res?.data ?? [];
 
       if (newReviews.length === 0) {
         setIsEnd(true);
@@ -69,15 +73,16 @@ export default function RecentReviews({ businessId, initialReviews = [] }: Props
     setPage(1);
     setIsEnd(false);
     setLoading(false);
-  }, [businessId]);
+  }, [businessId, initialReviews]);
 
   useEffect(() => {
     fetchReviews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, businessId]);
 
   return (
     <section className="max-w-6xl mx-auto mt-16 px-4">
-      <h2 className="text-2xl text-center font-semibold mb-6">Сүүлд нэмэгдсэн сэтгэгдлүүд</h2>
+      <h2 className="text-2xl text-center font-semibold mb-6">Recent reviews</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {reviews.map((rev) => (
@@ -99,13 +104,13 @@ export default function RecentReviews({ businessId, initialReviews = [] }: Props
       {!isEnd && (
         <div className="flex justify-center mt-8">
           <Button onClick={() => setPage((p) => p + 1)} disabled={loading} className="px-6">
-            {loading ? "Уншиж байна..." : "Дахин ачаалах"}
+            {loading ? "Loading..." : "Load more"}
           </Button>
         </div>
       )}
 
       {isEnd && (
-        <p className="text-center text-sm text-gray-500 mt-6">Бүх сэтгэгдлийг үзлээ.</p>
+        <p className="text-center text-sm text-gray-500 mt-6">No more reviews.</p>
       )}
     </section>
   );

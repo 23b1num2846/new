@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import BusinessCard from "./BusinessCard";
 import type { BusinessDto } from "@yellows/contract";
+import { fetchJson, mockData } from "@/app/lib/api";
 
 type Props = {
   businesses?: BusinessDto[];
@@ -12,8 +13,8 @@ type Props = {
 
 export default function BusinessGrid({
   businesses: initial,
-  title = "Шилдэг бизнесүүд",
-  emptyMessage = "Бизнес олдсонгүй.",
+  title = "Businesses",
+  emptyMessage = "No businesses found.",
 }: Props) {
   const [businesses, setBusinesses] = useState<BusinessDto[]>(initial ?? []);
   const [loading, setLoading] = useState(!initial);
@@ -23,8 +24,11 @@ export default function BusinessGrid({
 
     async function load() {
       try {
-        const res = await fetch("http://127.0.0.1:3333/api/business");
-        const json = await res.json();
+        const json = await fetchJson<{ data: BusinessDto[] }>(
+          "/api/business",
+          undefined,
+          mockData.businessList
+        );
         setBusinesses(json.data ?? []);
       } catch (err) {
         console.error("Failed to load businesses", err);
@@ -36,7 +40,7 @@ export default function BusinessGrid({
     load();
   }, [initial]);
 
-  if (loading) return <div>Уншиж байна...</div>;
+  if (loading) return <div>Loading businesses...</div>;
 
   return (
     <section className="max-w-7xl mx-auto px-4 mt-10">

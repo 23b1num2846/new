@@ -5,6 +5,7 @@ import { Search, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { fetchJson, mockData } from "@/app/lib/api";
 
 type Props = {
   onSearch?: (q: string) => void;
@@ -38,11 +39,11 @@ export default function SearchBar({ onSearch, defaultValue = "" }: Props) {
     const controller = new AbortController();
     setLoading(true);
 
-    fetch(
-      `http://localhost:3333/api/business/search?q=${encodeURIComponent(query)}&limit=5`,
-      { signal: controller.signal }
+    fetchJson<{ data: Suggestion[] }>(
+      `/api/business/search?q=${encodeURIComponent(query)}&limit=5`,
+      { signal: controller.signal },
+      { data: mockData.businesses.slice(0, 5) }
     )
-      .then((r) => r.json())
       .then((data) => {
         setSuggestions(data?.data ?? []);
         setOpen(true);
@@ -68,7 +69,7 @@ export default function SearchBar({ onSearch, defaultValue = "" }: Props) {
       <div className="relative flex items-center gap-2 bg-white text-zinc-900 shadow-lg p-3 rounded-full border">
         <Search className="text-zinc-500 ml-3" />
         <Input
-          placeholder="Бизнесийн нэр, ангилал, байршил..."
+          placeholder="Search for businesses, food, locations..."
           className="border-none focus-visible:ring-0 text-lg text-zinc-900 placeholder:text-zinc-400"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -85,7 +86,7 @@ export default function SearchBar({ onSearch, defaultValue = "" }: Props) {
           className="rounded-full px-6 h-12 text-base"
           onClick={() => triggerSearch(query)}
         >
-          Хайх
+          Search
         </button>
       </div>
 
@@ -95,12 +96,12 @@ export default function SearchBar({ onSearch, defaultValue = "" }: Props) {
             {loading && (
               <div className="flex items-center gap-2 px-4 py-3 text-sm text-zinc-600">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Хайж байна...
+                Loading...
               </div>
             )}
 
             {!loading && suggestions.length === 0 && (
-              <div className="px-4 py-3 text-sm text-zinc-500">Үр дүн олдсонгүй</div>
+              <div className="px-4 py-3 text-sm text-zinc-500">No matches found</div>
             )}
 
             {!loading &&

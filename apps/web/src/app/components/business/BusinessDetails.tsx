@@ -1,30 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
-// import MapIsland from "@/components/maps/MapIsland";
 import ReviewCard from "../home/ReviewCard";
 import Image from "next/image";
-
-
-type Business = {
-  id: string;
-  name: string;
-  description: string;
-  address: string;
-  phone: string;
-  timetable: string;
-  logoUrl?: string | null;
-  location: string;
-  reviews: any[];
-};
+import type { BusinessDto, ReviewDto } from "@yellows/contract";
+import { fetchJson, pickBusiness } from "@/app/lib/api";
 
 type Props =
   | { id: string; business?: never }
-  | { id?: never; business: Business };
+  | { id?: never; business: BusinessDto };
 
 export default function BusinessDetails(props: Props) {
-  const [data, setData] = useState<Business | null>(props.business ?? null);
+  const [data, setData] = useState<(BusinessDto & { reviews?: ReviewDto[] }) | null>(
+    props.business ?? null
+  );
   const [loading, setLoading] = useState(!props.business);
 
   useEffect(() => {
@@ -32,11 +21,8 @@ export default function BusinessDetails(props: Props) {
     const bizId = props.id;
     if (!bizId) return;
 
-    fetch(`http://localhost:3333/api/business/${bizId}`)
-      .then((res) => res.json())
-      .then((d) => {
-        setData(d);
-      })
+    fetchJson<BusinessDto | null>(`/api/business/${bizId}`, undefined, pickBusiness(bizId) ?? null)
+      .then((biz) => setData(biz))
       .catch((err) => {
         console.error("Failed to load business", err);
       })
@@ -67,11 +53,11 @@ export default function BusinessDetails(props: Props) {
 
       <p className="text-zinc-700 mb-6">{data.description}</p>
 
-      <h2 className="text-2xl font-semibold mb-4">Сэтгэгдлүүд</h2>
+      <h2 className="text-2xl font-semibold mb-4">Recent reviews</h2>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {data.reviews.map((r: any) => (
-          <ReviewCard key={r.id} review={r} />
+        {(data.reviews ?? []).map((r) => (
+          <ReviewCard key={r.id} review={r as any} />
         ))}
       </div>
     </div>
