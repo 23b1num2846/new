@@ -14,9 +14,9 @@ type Review = {
   funny: number;
   cool: number;
   businessId: string;
-  business: { name: string };
-  user: { name: string; avatarUrl?: string | null };
-  photos: { url: string }[];
+  business?: { name: string } | null;
+  user?: { name: string; avatarUrl?: string | null } | null;
+  photos?: { id?: string; url: string }[];
 };
 
 type Props = {
