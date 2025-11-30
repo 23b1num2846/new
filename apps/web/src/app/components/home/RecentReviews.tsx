@@ -5,12 +5,27 @@ import ReviewCard from "./ReviewCard";
 import { Button } from "@/app/components/ui/button";
 import { Skeleton } from "@/app/components/ui/skeleton";
 import { fetchJson, mockData } from "@/app/lib/api";
-import type { ReviewDto } from "@yellows/contract";
 
-type Review = ReviewDto & {
+type Review = {
+  id: string;
+  businessId: string;
+  rating?: number;
+  text?: string | null;
+  useful?: number;
+  funny?: number;
+  cool?: number;
+  createdAt?: string;
+  userId?: string;
   business?: { name?: string } | null;
   user?: { name?: string; avatarUrl?: string | null } | null;
   photos?: { id?: string; url: string }[];
+  ratings?: {
+    id?: string;
+    reviewId?: string;
+    categoryId?: string;
+    score?: number;
+    category?: { name?: string } | null;
+  }[];
 };
 
 type Props = {
