@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ReviewCard from "./ReviewCard";
 import { Button } from "@/app/components/ui/button";
 import { Skeleton } from "@/app/components/ui/skeleton";
@@ -30,7 +30,7 @@ export default function RecentReviews({ businessId, initialReviews = [] }: Props
   const [loading, setLoading] = useState(false);
   const [isEnd, setIsEnd] = useState(false);
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     if (loading || isEnd) return;
 
     setLoading(true);
@@ -40,11 +40,7 @@ export default function RecentReviews({ businessId, initialReviews = [] }: Props
         ? `/api/review/business/${businessId}?page=${page}&limit=12`
         : `/api/reviews/list?page=${page}&limit=12`;
 
-      const res = await fetchJson<{ data: Review[] }>(
-        url,
-        undefined,
-        { data: mockData.reviews }
-      );
+      const res = await fetchJson<{ data: Review[] }>(url, undefined, { data: mockData.reviews });
       const newReviews = res?.data ?? [];
 
       if (newReviews.length === 0) {
@@ -66,7 +62,7 @@ export default function RecentReviews({ businessId, initialReviews = [] }: Props
     }
 
     setLoading(false);
-  };
+  }, [businessId, page, isEnd, loading]);
 
   useEffect(() => {
     setReviews(initialReviews);
@@ -77,8 +73,7 @@ export default function RecentReviews({ businessId, initialReviews = [] }: Props
 
   useEffect(() => {
     fetchReviews();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, businessId]);
+  }, [fetchReviews]);
 
   return (
     <section className="max-w-6xl mx-auto mt-16 px-4">

@@ -1,19 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import Image from "next/image";
 import Link from "next/link";
 import { Card } from "@/app/components/ui/card";
+import type { ReviewDto } from "@yellows/contract";
 
-type Review = {
-  id: string;
-  businessId: string;
+type Review = ReviewDto & {
   business?: { name?: string } | null;
   user?: { name?: string; avatarUrl?: string | null } | null;
   photos?: { url: string }[];
-  createdAt?: string;
-  text?: string | null;
-  useful?: number;
-  funny?: number;
-  cool?: number;
 };
 
 export default function ReviewCard({ review }: { review: Review }) {

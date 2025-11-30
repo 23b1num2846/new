@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Suspense } from "react";
 import SearchBar from "@/app/components/layout/SearchBar";
 import BusinessGrid from "@/app/components/business/BusinessGrid";

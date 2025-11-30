@@ -57,7 +57,7 @@ export default function BusinessDetails(props: Props) {
 
       <div className="grid md:grid-cols-2 gap-6">
         {(data.reviews ?? []).map((r) => (
-          <ReviewCard key={r.id} review={r as any} />
+          <ReviewCard key={r.id} review={r} />
         ))}
       </div>
     </div>

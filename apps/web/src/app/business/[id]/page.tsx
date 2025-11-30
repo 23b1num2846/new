@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import BusinessDetails from "@/app/components/business/BusinessDetails";
 import ReviewsSection from "@/app/components/home/RecentReviews";
 import MapIsland from "@/app/components/maps/MapIsland";
