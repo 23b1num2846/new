@@ -1,17 +1,31 @@
-FROM node:20-alpine AS builder
-ENV CI=true
-WORKDIR /app
+# syntax=docker/dockerfile:1
 
+FROM node:20-alpine AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+WORKDIR /app
+RUN corepack enable
+
+FROM base AS build-deps
+COPY pnpm-workspace.yaml package.json ./
+COPY apps/web/package.json apps/web/package.json
+COPY libs/config/package.json libs/config/package.json
+COPY libs/contract/package.json libs/contract/package.json
+RUN pnpm install --frozen-lockfile=false
+
+FROM build-deps AS builder
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 COPY . .
+RUN pnpm nx run @yellows/web:build:production
 
-RUN npm install -g pnpm
-RUN pnpm install
-RUN pnpm nx build @yellows/web
-
-FROM node:20-alpine
+FROM node:20-alpine AS runner
+ENV NODE_ENV=production
 WORKDIR /app
-
-COPY --from=builder /app/dist/apps/web .
-
+COPY --from=builder /app/apps/web/.next/standalone ./
+COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=builder /app/apps/web/public ./apps/web/public
+ENV NEXT_TELEMETRY_DISABLED=1
 EXPOSE 3000
+WORKDIR /app/apps/web
 CMD ["node", "server.js"]

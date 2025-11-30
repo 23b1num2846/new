@@ -5,14 +5,17 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     env:
       NODE_OPTIONS: "--max_old_space_size=4096"
-      NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
 
     steps:
       - name: Checkout repo
@@ -24,16 +27,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: pnpm
 
-      - name: Install PNPM
-        run: npm install -g pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile=false
 
       - name: Prisma Generate
         run: pnpm prisma generate
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
@@ -43,38 +52,41 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Detect affected projects
         id: affected
         run: |
-          AFFECTED=$(npx nx show projects --affected --base=origin/main | tr '\n' ' ')
-          echo "projects=$AFFECTED" >> $GITHUB_OUTPUT
+          BASE_SHA="${{ github.event.before }}"
+          if [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ] || [ -z "$BASE_SHA" ]; then
+            BASE_SHA=$(git rev-parse HEAD~1)
+          fi
+          AFFECTED=$(pnpm nx show projects --affected --base="$BASE_SHA" --head="$GITHUB_SHA" | tr '\n' ' ')
+          echo "projects=$AFFECTED" >> "$GITHUB_OUTPUT"
 
       - name: Build API Image
-        if: contains(steps.affected.outputs.projects, 'api')
-        run: |
-          docker build \
-            -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY_API }}:latest \
-            -f apps/api/Dockerfile \
-            .
-
-      - name: Push API Image
-        if: contains(steps.affected.outputs.projects, 'api')
-        run: |
-          docker push \
-            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY_API }}:latest
+        if: contains(steps.affected.outputs.projects, '@yellows/api')
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/dockerfile
+          push: true
+          build-args: |
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_API }}:${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_API }}:latest
 
       - name: Build Web Image
-        if: contains(steps.affected.outputs.projects, 'web')
-        run: |
-          docker build \
-            -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY_WEB }}:latest \
-            -f apps/web/Dockerfile \
-            .
-
-      - name: Push Web Image
-        if: contains(steps.affected.outputs.projects, 'web')
-        run: |
-          docker push \
-            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY_WEB }}:latest
+        if: contains(steps.affected.outputs.projects, '@yellows/web')
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/web/dockerfile
+          push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_WEB }}:${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_WEB }}:latest

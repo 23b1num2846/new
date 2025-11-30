@@ -1,36 +1,30 @@
-FROM node:20-alpine AS builder
-ENV CI=true
-WORKDIR /app
+# syntax=docker/dockerfile:1
 
-# Copy all monorepo files
+FROM node:20-alpine AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+WORKDIR /app
+RUN corepack enable
+
+FROM base AS build-deps
+COPY pnpm-workspace.yaml package.json ./
+COPY apps/api/package.json apps/api/package.json
+COPY libs/config/package.json libs/config/package.json
+COPY libs/contract/package.json libs/contract/package.json
+RUN pnpm install --frozen-lockfile=false
+
+FROM build-deps AS builder
+ARG DATABASE_URL
+ENV DATABASE_URL=$DATABASE_URL
 COPY . .
+RUN pnpm prisma generate
+RUN pnpm nx run @yellows/api:build:production
 
-# Install pnpm
-RUN npm install -g pnpm
-
-# Install all dependencies for all workspace packages
-RUN pnpm install
-
-# Build ALL libs/apps using Nx
-RUN pnpm nx run-many -t build
-
-# -----------------
-# Final Run Image
-# -----------------
-FROM node:20-alpine
-WORKDIR /app
-
-# Copy API build output
-COPY --from=builder /app/dist/apps/api ./
-
-# Copy built libs (contract, config, etc)
-COPY --from=builder /app/dist/libs ./dist/libs
-
-# Copy prisma
-COPY --from=builder /app/prisma ./prisma
-
-# Install production dependencies only
-COPY --from=builder /app/node_modules ./node_modules
-
+FROM node:20-alpine AS runner
+ENV NODE_ENV=production
+WORKDIR /app/apps/api/dist
+COPY --from=builder /app/apps/api/dist ./
+COPY --from=builder /app/prisma /app/prisma
+COPY --from=builder /app/node_modules /app/node_modules
 EXPOSE 3333
 CMD ["node", "main.js"]
