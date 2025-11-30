@@ -7,7 +7,7 @@ import type { BusinessDto, CategoryDto } from "@yellows/contract";
 export const revalidate = 120;
 
 async function getCategory(id: string) {
-  return fetchJson<CategoryDto & { businesses?: BusinessDto[] }>(
+  const res = await fetchJson<CategoryDto & { businesses?: BusinessDto[] }>(
     `/api/category/${id}`,
     { next: { revalidate: 120 } },
     {
@@ -15,6 +15,7 @@ async function getCategory(id: string) {
       businesses: mockData.businesses,
     }
   );
+  return { ...res, businesses: res.businesses ?? [] };
 }
 
 export default async function CategorySingle({ params }: any) {
