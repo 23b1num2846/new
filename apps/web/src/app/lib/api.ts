@@ -1,4 +1,4 @@
-import type { BusinessDto, CategoryDto, ReviewDto } from "@yellows/contract";
+import type { BusinessDto, CategoryDto, ReviewDto } from "@/app/types/contract";
 
 const rawBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
 const API_BASE = rawBase.replace(/\/$/, "");

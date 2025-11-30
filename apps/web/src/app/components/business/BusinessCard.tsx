@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { MapPin, Phone, Clock, Star } from "lucide-react";
 import Link from "next/link";
 
 type BusinessCardProps = {
@@ -33,15 +32,13 @@ export default function BusinessCard({ business }: BusinessCardProps) {
           className="object-cover"
         />
         <div className="absolute top-3 right-3 bg-black/70 text-white text-xs px-3 py-1 rounded-full">
-          ҮНЭ
+          Featured
         </div>
       </div>
 
       <div className="p-4">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-zinc-900">
-            {business.name}
-          </h3>
+          <h3 className="text-lg font-semibold text-zinc-900">{business.name}</h3>
 
           {business.category?.name && (
             <span className="text-xs bg-zinc-100 px-3 py-1 rounded-full text-zinc-600">
@@ -50,45 +47,26 @@ export default function BusinessCard({ business }: BusinessCardProps) {
           )}
         </div>
 
-        {/* Rating */}
-        <div className="flex items-center gap-1 mt-2">
-          {[...Array(5)].map((_, i) => (
-            <Star
-              key={i}
-              className={`h-4 w-4 ${
-                i < Math.round(business.avgRating || 0)
-                  ? "fill-amber-400 text-amber-400"
-                  : "text-zinc-300"
-              }`}
-            />
-          ))}
-          <span className="ml-1 text-sm font-medium">
-            {business.avgRating?.toFixed(1) || "0.0"}
-          </span>
-          <span className="text-xs text-zinc-500">
-            ({business.reviewCount ?? 0} сэтгэгдэл)
-          </span>
+        <div className="flex items-center gap-2 mt-2 text-sm">
+          <span>★ {business.avgRating?.toFixed(1) || "0.0"}</span>
+          <span className="text-xs text-zinc-500">({business.reviewCount ?? 0} reviews)</span>
         </div>
 
-        {/* Description */}
-        <p className="text-sm text-zinc-600 mt-2 line-clamp-2">
-          {business.description}
-        </p>
+        <p className="text-sm text-zinc-600 mt-2 line-clamp-2">{business.description}</p>
 
-        {/* Info */}
         <div className="mt-4 space-y-2 text-sm text-zinc-700">
           <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-zinc-500" />
+            <span>📍</span>
             {business.address}
           </div>
 
           <div className="flex items-center gap-2">
-            <Phone className="h-4 w-4 text-zinc-500" />
+            <span>📞</span>
             {business.phone}
           </div>
 
           <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-zinc-500" />
+            <span>⏰</span>
             {business.timetable}
           </div>
         </div>

@@ -2,7 +2,7 @@
 import BusinessGrid from "@/app/components/business/BusinessGrid";
 import CategoryDetails from "@/app/components/category/CategoryDetails";
 import { fetchJson, mockData } from "@/app/lib/api";
-import type { BusinessDto, CategoryDto } from "@yellows/contract";
+import type { BusinessDto, CategoryDto } from "@/app/types/contract";
 
 export const revalidate = 120;
 

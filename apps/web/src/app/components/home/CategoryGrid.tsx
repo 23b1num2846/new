@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { IoRestaurant } from "react-icons/io5";
 import { Card } from "@/app/components/ui/card";
-import type { CategoryDto } from "@yellows/contract";
+import type { CategoryDto } from "@/app/types/contract";
 import { fetchJson, mockData } from "@/app/lib/api";
 
 export default function CategoryGrid() {
@@ -27,7 +26,9 @@ export default function CategoryGrid() {
                 key={c.id}
                 className="p-6 flex flex-col items-center gap-3 cursor-pointer hover:shadow-lg transition"
               >
-                <IoRestaurant className="h-10 w-10" />
+                <div className="h-10 w-10 rounded-full bg-zinc-100 flex items-center justify-center text-lg">
+                  🍽️
+                </div>
                 <span className="font-medium text-zinc-700">{c.name}</span>
               </Card>
             );

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import BusinessCard from "../business/BusinessCard";
-import type { BusinessDto, CategoryDto } from "@yellows/contract";
+import type { BusinessDto, CategoryDto } from "@/app/types/contract";
 import { fetchJson, mockData } from "@/app/lib/api";
 
 type Props =

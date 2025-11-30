@@ -1,4 +1,4 @@
-import type { ReviewDto } from "@yellows/contract";
+import type { ReviewDto } from "@/app/types/contract";
 
 export type ReviewWithMeta = ReviewDto & {
   business?: { name?: string } | null;

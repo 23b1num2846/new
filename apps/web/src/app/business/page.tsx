@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import BusinessGrid from "../components/business/BusinessGrid";
 import { fetchJson, mockData } from "../lib/api";
-import type { BusinessDto } from "@yellows/contract";
+import type { BusinessDto } from "@/app/types/contract";
 
 export const revalidate = 60;
 

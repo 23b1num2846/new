@@ -3,7 +3,7 @@ import ReviewsSection from "@/app/components/home/RecentReviews";
 import MapIsland from "@/app/components/maps/MapIsland";
 import { Suspense } from "react";
 import { fetchJson, mockData, pickBusiness } from "@/app/lib/api";
-import type { BusinessDto } from "@yellows/contract";
+import type { BusinessDto } from "@/app/types/contract";
 
 export const revalidate = 3600;
 

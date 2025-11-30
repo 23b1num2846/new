@@ -1,7 +1,6 @@
 "use client";
 
 import { Input } from "@/app/components/ui/input";
-import { Search, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -67,7 +66,7 @@ export default function SearchBar({ onSearch, defaultValue = "" }: Props) {
   return (
     <div className="w-full max-w-3xl mx-auto mt-6">
       <div className="relative flex items-center gap-2 bg-white text-zinc-900 shadow-lg p-3 rounded-full border">
-        <Search className="text-zinc-500 ml-3" />
+        <span className="text-zinc-500 ml-3">🔍</span>
         <Input
           placeholder="Search for businesses, food, locations..."
           className="border-none focus-visible:ring-0 text-lg text-zinc-900 placeholder:text-zinc-400"
@@ -86,7 +85,7 @@ export default function SearchBar({ onSearch, defaultValue = "" }: Props) {
           className="rounded-full px-6 h-12 text-base"
           onClick={() => triggerSearch(query)}
         >
-          Search
+          {loading ? "Loading..." : "Search"}
         </button>
       </div>
 
@@ -95,7 +94,6 @@ export default function SearchBar({ onSearch, defaultValue = "" }: Props) {
           <div className="absolute left-0 right-0 mt-2 bg-white border rounded-xl shadow-lg z-20">
             {loading && (
               <div className="flex items-center gap-2 px-4 py-3 text-sm text-zinc-600">
-                <Loader2 className="h-4 w-4 animate-spin" />
                 Loading...
               </div>
             )}

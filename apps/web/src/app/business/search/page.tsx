@@ -3,7 +3,7 @@ import SearchBar from "@/app/components/layout/SearchBar";
 import BusinessGrid from "@/app/components/business/BusinessGrid";
 import MapIsland from "@/app/components/maps/MapIsland";
 import { fetchJson, mockData } from "@/app/lib/api";
-import type { BusinessDto } from "@yellows/contract";
+import type { BusinessDto } from "@/app/types/contract";
 
 export const dynamic = "force-dynamic";
 

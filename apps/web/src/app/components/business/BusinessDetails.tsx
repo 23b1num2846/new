@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import ReviewCard from "../home/ReviewCard";
 import Image from "next/image";
-import type { BusinessDto, ReviewDto } from "@yellows/contract";
+import type { BusinessDto, ReviewDto } from "@/app/types/contract";
 import { fetchJson, pickBusiness } from "@/app/lib/api";
 
 type Props =

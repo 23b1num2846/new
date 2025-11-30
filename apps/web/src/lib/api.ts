@@ -1,6 +1,3 @@
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-
 export const API_URL = "http://localhost:3001";
 
 export async function getReviews(page = 1, limit = 12) {
@@ -13,7 +10,7 @@ export async function getCategories() {
   return res.json();
 }
 
-// shadcn: merge Tailwind classes with conditional values
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+// Simple class merge helper without external deps
+export function cn(...inputs: Array<string | false | null | undefined>) {
+  return inputs.filter(Boolean).join(" ");
 }
